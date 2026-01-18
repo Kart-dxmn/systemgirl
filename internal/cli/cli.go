@@ -10,27 +10,11 @@ import (
 	"time"
 )
 
-func Execute(args []string) {
-	if len(args) == 0 {
-		help()
-		return
-	}
-
-	switch args[0] {
-	case "add":
-		addConnect()
-	case "connect":
-		connect()
-	default:
-		help()
-	}
+func Help() {
+	fmt.Println("Usage sgirl <add --ip=<..> --username=<...> --password=<...> --name=<...>| connect <*nameOfConnect>")
 }
 
-func help() {
-	fmt.Println("Usage sgirl <add --ip=<..> --username=<...> --password=<...> --name=<...> |connect <*nameOfConnect>")
-}
-
-func addConnect() {
+func AddConnect() {
 	add := flag.NewFlagSet("add", flag.ExitOnError)
 	ip := add.String("ip", "", "IP-address of target device")
 	user := add.String("user", "", "username to login in target device")
@@ -60,19 +44,19 @@ func addConnect() {
 	os.WriteFile(fmt.Sprintf("../config/%s_config.yaml", *name), configYaml, 0644)
 
 	//Вывод сведений в термнинал
-	fmt.Printf("%-20s %-15s %-10s %s\n", "IP", "USER", "PprintUsageASSWORD", "NAME")
+
 	fmt.Printf("IP: %s, User: %s, Password: %s, ConnectName: %s\n", *ip, *user, strings.Repeat("*", len(*passwd)), *name)
 	fmt.Printf("File saved on ../config/%s_config.yaml", *name)
 }
 
-func connect() {
+func Connect() {
 	connect := flag.NewFlagSet("connect", flag.ExitOnError)
 	if len(os.Args) < 2 {
 		fmt.Println("Please  usage: sgirl add <name of connect>")
 		os.Exit(1)
 	}
 	connect.Parse(os.Args[2:])
-	nameConn := connect.Arg(2)
+	nameConn := connect.Arg(0)
 	open, _ := os.ReadFile(fmt.Sprintf("../config/%s_config.yaml", nameConn))
 	var cfg Config
 	yaml.Unmarshal(open, &cfg)
@@ -85,7 +69,7 @@ func connect() {
 		stdin.Close()
 	}()
 	cmd.Wait()
-	fmt.Println("Connected to %s", nameConn)
+	fmt.Printf("Connected to %s", nameConn)
 }
 
 type Config struct {
