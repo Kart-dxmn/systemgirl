@@ -11,7 +11,7 @@ import (
 )
 
 func Help() {
-	fmt.Println("Usage sgirl <add --ip=<..> --username=<...> --password=<...> --name=<...>| connect <*nameOfConnect>")
+	fmt.Println("Usage sgirl <add --ip=<..> --user=<...> --password=<...> --name=<...>| connect <*nameOfConnect>")
 }
 
 func AddConnect() {
@@ -22,12 +22,12 @@ func AddConnect() {
 	name := add.String("name", "", "number or name connect for you")
 	//Проверка на наличие всех обязательных аргументов
 	if len(os.Args) < 3 {
-		fmt.Println("You should use: sgirl add --ip=<...> --username=<...> --password=<...> | --name=<...>")
+		fmt.Println("You should use: sgirl add --ip=<...> --user=<...> --password=<...> | --name=<...>")
 		os.Exit(1)
 	}
 	if len(*name) == 0 {
-		checkConfigDir, _ := os.ReadDir("../config")
-		*name = fmt.Sprintf("num_%s", len(checkConfigDir)+1)
+		checkConfigDir, _ := os.ReadDir("./config")
+		*name = fmt.Sprintf("num_%s", string(len(checkConfigDir)+1))
 	}
 
 	add.Parse(os.Args[2:])
@@ -41,7 +41,7 @@ func AddConnect() {
 	configYaml, _ := yaml.Marshal(config)
 
 	//Запись в конфиг
-	os.WriteFile(fmt.Sprintf("../config/%s_config.yaml", *name), configYaml, 0644)
+	os.WriteFile(fmt.Sprintf("./config/%s_config.yaml", *name), configYaml, 0644)
 
 	//Вывод сведений в термнинал
 
@@ -52,15 +52,15 @@ func AddConnect() {
 func Connect() {
 	connect := flag.NewFlagSet("connect", flag.ExitOnError)
 	if len(os.Args) < 2 {
-		fmt.Println("Please  usage: sgirl add <name of connect>")
+		fmt.Println("Please  usage: sgirl connect <name of connect>")
 		os.Exit(1)
 	}
 	connect.Parse(os.Args[2:])
 	nameConn := connect.Arg(0)
-	open, _ := os.ReadFile(fmt.Sprintf("../config/%s_config.yaml", nameConn))
+	open, _ := os.ReadFile(fmt.Sprintf("./config/%s_config.yaml", nameConn))
 	var cfg Config
 	yaml.Unmarshal(open, &cfg)
-	cmd := exec.Command("ssh", cfg.USERNAME, cfg.IP)
+	cmd := exec.Command("ssh", cfg.USERNAME+"@"+cfg.IP)
 	stdin, _ := cmd.StdinPipe()
 	cmd.Start()
 	go func() {
